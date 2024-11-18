@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molecule Sound Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+            text-align: center;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Molecule Sound Generator</h1>
+    <p>Enter a molecular formula (e.g., H2O, CO2) and click Generate Sound:</p>
+
+    <input type="text" id="molecule" placeholder="Enter molecule (e.g., H2O)">
+    <button onclick="generateSound()">Generate Sound</button>
+    
+    <p id="status"></p>
+    
+    <audio id="audio" controls style="display:none;">
+        <source id="audioSource" type="audio/wav">
+    </audio>
+
+    <script>
+        function generateSound() {
+            const molecule = document.getElementById('molecule').value;
+            const status = document.getElementById('status');
+            const audio = document.getElementById('audio');
+            const audioSource = document.getElementById('audioSource');
+            
+            if (!molecule) {
+                status.textContent = "Please enter a valid molecular formula.";
+                return;
+            }
+
+            status.textContent = "Generating sound...";
+
+            fetch('/generate-sound', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ molecule })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Error generating sound');
+                return response.blob();
+            })
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                audioSource.src = url;
+                audio.style.display = "block";
+                audio.load();
+                audio.play();
+                status.textContent = "Sound generated!";
+            })
+            .catch(error => {
+                status.textContent = "Error: " + error.message;
+            });
+        }
+    </script>
+</body>
+</html>
